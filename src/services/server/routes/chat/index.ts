@@ -103,7 +103,7 @@ router.delete(
 )
 
 router.get(
-    '/',
+    '/list',
     UserValidator.validate,
     async (user: User, req: Request, res: Response, next: NextFunction) => {
         try {

@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express"
 import { Environment } from '../../../../utils/env';
 import { JWTUserInterface } from '../../../../utils/user/interfaces/index.types';
 import { User } from '../../../../utils/user';
+import { token } from 'morgan';
 
 export class UserValidator {
     static validate = async (req: Request, res: Response, next: NextFunction) => {
@@ -23,10 +24,7 @@ export class UserValidator {
         }
 
         try {
-            const data = jwt.verify(token, Environment.getJWTPassword()) as JWTUserInterface;
-            const user = await User.findById(data.id)
-
-            next(user);
+            next(await UserValidator.getUserByToken(token));
         } catch (error) {
             if (error instanceof Error) {
                 return res.status(401).json({ message: error.message });
@@ -34,6 +32,14 @@ export class UserValidator {
 
             return res.status(500).json({ message: 'Internal Server Error' });
         }
+    }
 
+    static getUserByToken = async (token: string) => {
+        try {
+            const data = jwt.verify(token, Environment.getJWTPassword()) as JWTUserInterface;
+            return await User.findById(data.id);
+        } catch (error) {
+            return null;
+        }
     }
 }

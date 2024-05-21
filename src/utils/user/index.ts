@@ -11,10 +11,10 @@ export class User {
     ) { }
 
     public static async create(data: Prisma.UserCreateInput) {
-        const exists = await prisma.user.findUnique({ where: { email: data.email } })
+        const exists = await this.findByEmail(data.email)
 
         if (exists) {
-            throw new Error("Usuário já existe")
+            return false;
         }
 
         const password = await bcrypt.hash(Environment.getBcryptPassword() as any, 10);
@@ -47,7 +47,7 @@ export class User {
         })
 
         if (!data) {
-            throw new Error("Usuário não encontrado com este e-mail")
+            return null;
         }
 
         return new User(data)

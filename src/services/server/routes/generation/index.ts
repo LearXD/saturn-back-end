@@ -7,12 +7,14 @@ import { UserValidator } from '../../middlewares/user-validator';
 import { User } from '../../../../utils/user';
 import { LLAMA } from '../../../llama';
 import { ServerError } from '../../error';
+import { Task } from '../../../web-socket/utils/task';
+import { WebSocketServer } from '../../../web-socket';
+import { v4 } from 'uuid';
 
 const router = express.Router();
 
 router.post(
     '/',
-    UserValidator.validate,
     Validator.validate(yup.object().shape({
         chatId: yup.number()
             .required("É obrigatório informar o chat"),
@@ -20,6 +22,7 @@ router.post(
             .max(2500, 'Você só pode mandar até 2500 caracteres')
             .required("É obrigatório informar o conteúdo")
     })),
+    UserValidator.validate,
     async (user: User, req: Request, res: Response, next: NextFunction) => {
         const { content, chatId } = req.body;
 
@@ -31,29 +34,35 @@ router.post(
                 throw next(ServerError.from('Chat não encontrado', 404))
             }
 
-            if (req.headers.accept && req.headers.accept === 'text/event-stream') {
+            await chat.createMessage(content, true);
+            const uuid = v4();
 
-                await chat.createMessage(content, true);
+            WebSocketServer.getInstance().createTask(
+                new Task(
+                    uuid,
+                    async (client) => {
+                        let generated = ""
+                        const abortController = new AbortController();
 
-                res.setHeader('Content-Type', 'text/event-stream');
-                res.setHeader('Cache-Control', 'no-cache');
-                res.setHeader('Connection', 'keep-alive');
+                        client.on('close', () => abortController.abort())
 
-                let generated = ""
-                const abortController = new AbortController();
+                        for await (const token of LLAMA.generate(content, abortController)) {
+                            generated += token.content;
+                            client.send(token.content);
+                        }
 
-                for await (const token of LLAMA.generate(content, abortController)) {
-                    generated += token.content;
-                    res.write(token.content);
-                }
+                        await chat.createMessage(generated, false);
+                        client.close();
+                    },
+                    {
+                        userId: user.getData().id,
+                    }
+                )
+            )
 
-                await chat.createMessage(generated, false);
-                res.end();
-                return;
-            }
-
-            next(ServerError.from('Invalid request', 400));
+            return res.send({ message: 'Mensagem enviada', uuid });
         } catch (error: Error | any) {
+            console.log(error)
             next(new ServerError(error, 500))
         }
     }

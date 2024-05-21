@@ -23,14 +23,14 @@ router.post(
         const { username, password, email } = req.body;
 
         try {
-            await User.create({ username, password, email })
-            res.status(200).json({ message: 'Usuário criado com sucesso!' })
-        } catch (error) {
+            const success = await User.create({ username, password, email })
 
-            if (error instanceof Error) {
-                return next(ServerError.from('Internal server error', 500))
+            if (!success) {
+                return next(ServerError.from('Já existe um usuário com este e-mail!', 400))
             }
 
+            res.status(200).json({ message: 'Usuário criado com sucesso!' })
+        } catch (error) {
             res.status(500).json({ message: 'Internal server error' })
         }
     }

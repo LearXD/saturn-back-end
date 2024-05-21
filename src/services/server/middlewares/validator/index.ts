@@ -11,15 +11,17 @@ export enum ValidatorType {
 
 export class Validator {
     static validate = (schema: yup.Schema, type: ValidatorTypes = 'body') => {
-        return (data: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            console.log('Validando...')
+
             try {
                 req[type] = schema.validateSync(req[type], { stripUnknown: true });
-                next(data);
+                next();
             } catch (error) {
                 if (error instanceof yup.ValidationError) {
-                    return next(ServerError.from(error.errors.join(', '), 400))
+                    return res.status(400).json({ message: error.message });
                 }
-                return next(ServerError.from('Internal server error', 500))
+                return res.status(500).json({ message: 'Internal Server Error' });
             }
         };
     }

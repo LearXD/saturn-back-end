@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
@@ -23,6 +24,8 @@ export class Server {
     }
 
     public registerMiddlewares = () => {
+        console.log('Registrando middlewares...')
+        this.instance.use(morgan('dev'))
         this.instance.use(bodyParser.json())
         this.instance.use(cors())
     }
@@ -53,7 +56,7 @@ export class Server {
             next: NextFunction
         ) => {
             if (error instanceof ServerError) {
-                return res.status(error.getStatus()).send({ message: error.getMessage() });
+                return res.status(error.getStatus()).send({ error: true, message: error.getMessage() });
             }
 
             res.status(500).send({ error: true, message: 'Unknown Server Error' });

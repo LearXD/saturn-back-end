@@ -25,6 +25,10 @@ router.post(
         try {
             const user = await User.findByEmail(email)
 
+            if (!user) {
+                return next(ServerError.from('Senha ou E-mail incorretos!', 404))
+            }
+
             if (!user.checkPassword(password)) {
                 return next(ServerError.from('Senha ou E-mail incorretos!', 401))
             }
