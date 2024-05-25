@@ -17,8 +17,7 @@ export class User {
             return false;
         }
 
-        const password = await bcrypt.hash(Environment.getBcryptPassword() as any, 10);
-        console.log(password)
+        const password = await bcrypt.hash(data.password, 10);
 
         const user = await prisma.user.create({
             data: {
