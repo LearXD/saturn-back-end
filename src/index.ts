@@ -7,10 +7,10 @@ const init = async () => {
 
     Environment.init();
 
-    const server = new Server({ port: 3000 })
+    const server = new Server({ port: Environment.getApiPort() })
     const port = await server.start();
 
-    const socket = new WebSocketServer({ port: 3001 })
+    const socket = new WebSocketServer({ port: Environment.getWsPort() })
     const socketPort = await socket.start();
 
     console.log(`Servidor iniciado na porta ${port}`)

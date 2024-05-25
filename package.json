@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev ./src/index.ts",
+    "dev": "ts-node-dev ./src/index.ts -- --dev",
     "db:push": "prisma db push"
   },
   "keywords": [],
