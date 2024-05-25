@@ -5,6 +5,8 @@ export class LLAMA {
     public static generate = async function* (prompt: string, controller: AbortController = new AbortController()) {
 
         try {
+            console.log(`${Environment.getLLAMAApiUrl()}/completion`)
+
             const response = await fetch(`${Environment.getLLAMAApiUrl()}/completion`, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -22,7 +24,8 @@ export class LLAMA {
                 signal: controller.signal,
             });
 
-            if (!response.ok || !response.body) {
+            if (!response.ok) {
+                console.log(await response.text());
                 throw new Error(`llama.cpp error: ${response.statusText}`);
             }
 

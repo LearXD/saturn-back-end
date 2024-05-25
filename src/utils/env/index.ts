@@ -2,10 +2,6 @@ import dotenv from 'dotenv';
 
 export class Environment {
     static init() {
-        if (process.argv.includes('--dev')) {
-            console.log('Using dev.env file');
-            return dotenv.config({ path: 'dev.env' });
-        }
         return dotenv.config();
     }
 

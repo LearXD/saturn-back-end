@@ -7,6 +7,7 @@ import { token } from 'morgan';
 
 export class UserValidator {
     static validate = async (req: Request, res: Response, next: NextFunction) => {
+        console.log('Validating user');
         const authorization = req.headers.authorization;
 
         if (!authorization) {
@@ -24,7 +25,9 @@ export class UserValidator {
         }
 
         try {
-            next(await UserValidator.getUserByToken(token));
+            const user = await UserValidator.getUserByToken(token);
+            console.log(user);
+            next(user);
         } catch (error) {
             if (error instanceof Error) {
                 return res.status(401).json({ message: error.message });

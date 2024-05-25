@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf ./dist/ && tsc",
     "dev": "ts-node-dev ./src/index.ts -- --dev",
     "db:push": "prisma db push"
   },

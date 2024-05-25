@@ -26,6 +26,7 @@ router.post(
     })),
     UserValidator.validate,
     async (user: User, req: Request, res: Response, next: NextFunction) => {
+        console.log('Generating message')
         const { content, chatId } = req.body;
 
         console.log(PromptBuilder.getInstance().getPrompt({ PROMPT: content }))
